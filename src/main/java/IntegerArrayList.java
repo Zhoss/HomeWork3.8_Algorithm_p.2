@@ -35,22 +35,55 @@ public class IntegerArrayList implements IntegerList {
         }
     }
 
-    private void checkAndIncreaseListSize() {
+    private void grow() {
         if (this.items[this.items.length - 1] != null) {
-            this.items = Arrays.copyOf(this.items, this.items.length + 1);
+            int newSize = (int) (this.items.length * 1.5) + 1;
+            this.items = Arrays.copyOf(this.items, newSize);
+        }
+    }
+
+    private void trim() {
+        for (int i = 0; i < this.items.length; i++) {
+            if (this.items[i] == null) {
+                this.items = Arrays.copyOf(this.items, i);
+                break;
+            }
         }
     }
 
     private void sort() {
-        for (int i = 1; i < this.items.length; i++) {
-            int temp = this.items[i];
-            int j = i;
-            while (j > 0 && this.items[j - 1] >= temp) {
-                this.items[j] = this.items[j - 1];
-                j--;
-            }
-            this.items[j] = temp;
+        quickSort(this.items, 0, this.items.length - 1);
+    }
+
+    public static void quickSort(Integer[] arr, int begin, int end) {
+        if (begin < end) {
+            int partitionIndex = partition(arr, begin, end);
+
+            quickSort(arr, begin, partitionIndex - 1);
+            quickSort(arr, partitionIndex + 1, end);
         }
+    }
+
+    private static int partition(Integer[] arr, int begin, int end) {
+        int pivot = arr[end];
+        int i = (begin - 1);
+
+        for (int j = begin; j < end; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+
+                swapElements(arr, i, j);
+            }
+        }
+
+        swapElements(arr, i + 1, end);
+        return i + 1;
+    }
+
+    private static void swapElements(Integer[] arr, int left, int right) {
+        int temp = arr[left];
+        arr[left] = arr[right];
+        arr[right] = temp;
     }
 
     private boolean binarySearch(Integer item) {
@@ -76,7 +109,7 @@ public class IntegerArrayList implements IntegerList {
 
     public Integer add(Integer item) {
         checkInputIsNotNull(item);
-        checkAndIncreaseListSize();
+        grow();
         if (this.items[0] == null) {
             this.items[0] = item;
         } else {
@@ -87,13 +120,14 @@ public class IntegerArrayList implements IntegerList {
                 }
             }
         }
+        trim();
         return item;
     }
 
     public Integer add(int index, Integer item) {
         checkInputIsNotNull(item);
         checkCorrectIndex(index);
-        checkAndIncreaseListSize();
+        grow();
         for (int i = 0; i < this.items.length; i++) {
             if (i > index) {
                 int j = i - 1;
@@ -101,6 +135,7 @@ public class IntegerArrayList implements IntegerList {
             }
         }
         this.items[index] = item;
+        trim();
         return item;
     }
 
